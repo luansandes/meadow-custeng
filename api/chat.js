@@ -1,4 +1,5 @@
 const { RESPONSE_FORMAT, conversationText, developerPrompt, loadServices, sourcesForIds } = require('../lib/chat-logic');
+const { loadLiveContext } = require('../lib/live-context');
 
 const DEFAULT_ORIGIN = 'https://luansandes.github.io';
 const MAX_MESSAGE_LENGTH = 500;
@@ -41,7 +42,7 @@ async function handler(req, res) {
   if (!process.env.OPENAI_API_KEY) return sendJson(res, 500, { error: 'The chat service is not configured.' }, headers);
 
   try {
-    const services = await loadServices();
+    const [services, liveContext] = await Promise.all([loadServices(), loadLiveContext()]);
     const openaiResponse = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
@@ -50,7 +51,7 @@ async function handler(req, res) {
         max_output_tokens: 450,
         text: { format: RESPONSE_FORMAT },
         input: [
-          { role: 'developer', content: [{ type: 'input_text', text: developerPrompt(services) }] },
+          { role: 'developer', content: [{ type: 'input_text', text: developerPrompt(services, liveContext) }] },
           { role: 'user', content: [{ type: 'input_text', text: conversationText(req.body?.history, message) }] }
         ]
       })

@@ -74,7 +74,7 @@
               <p class="eyebrow">Your service guide</p>
               <h1 id="page-title">Care starts with a good question.</h1>
               <p class="hero-copy">Find the right Meadow service for your pet—from routine checks to dental care, vaccinations and more.</p>
-              <div class="trust"><span>Clear service details</span><span>Answers for every pet</span></div>
+              <div class="trust"><span>Dublin routine care: Mon–Sat, 9–5</span><span>Emergency care: 24/7</span></div>
             </div>
             <aside class="pet-card" aria-label="Meadow Vet Care service assistant">
               <div class="pet-illustration" aria-hidden="true">🐾</div>
@@ -90,12 +90,14 @@
               <button class="quick clear" id="clear-chat" type="button">New chat</button>
             </div>
             <div id="conversation" aria-live="polite">
-              <div class="message assistant">Hello! I can help you explore Meadow Vet Care services, prices, appointment requirements and availability. What can I help your pet with today?</div>
+              <div class="message assistant">Hello! I can help with Meadow services, Dublin opening hours, Irish public holidays and current dog-walking weather. What can I help your pet with today?</div>
             </div>
             <div class="quick-questions" aria-label="Try a question">
               <button class="quick" type="button">What vaccinations are available for rabbits?</button>
               <button class="quick" type="button">Do cats need an appointment for dental care?</button>
               <button class="quick" type="button">What grooming services do you offer?</button>
+              <button class="quick" type="button">Are you open this Monday?</button>
+              <button class="quick" type="button">Is it too hot to walk my dog right now?</button>
             </div>
             <form id="chat-form">
               <label class="sr-only" for="question">Ask about a Meadow service</label>
@@ -193,7 +195,7 @@
 
       form.addEventListener('submit', (event) => { event.preventDefault(); ask(question.value.trim()); });
       document.querySelectorAll('.quick').forEach((button) => button.addEventListener('click', () => ask(button.textContent)));
-      document.querySelector('#clear-chat').addEventListener('click', () => { sessionHistory = []; sessionStorage.removeItem(SESSION_KEY); conversation.replaceChildren(); appendMessage('Hello! I can help you explore Meadow Vet Care services, prices, appointment requirements and availability. What can I help your pet with today?', 'assistant'); question.focus(); });
+      document.querySelector('#clear-chat').addEventListener('click', () => { sessionHistory = []; sessionStorage.removeItem(SESSION_KEY); conversation.replaceChildren(); appendMessage('Hello! I can help with Meadow services, Dublin opening hours, Irish public holidays and current dog-walking weather. What can I help your pet with today?', 'assistant'); question.focus(); });
       renderSavedConversation();
     </script>
   </body>

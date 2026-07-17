@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { SHEET_CSV_URL, loadServices, normaliseHistory, parseCsv, sourcesForIds } = require('../lib/chat-logic');
+const { DUBLIN_WEATHER_URL, HOLIDAY_API_BASE_URL, dublinDateParts, loadLiveContext } = require('../lib/live-context');
 
 test('CSV parser supports quoted commas', () => {
   assert.deepEqual(parseCsv('name,description\nTest,"one, two"\n'), [{ name: 'Test', description: 'one, two' }]);
@@ -25,4 +26,21 @@ test('model-selected IDs become safe public source objects', () => {
   assert.equal(sources.length, 1);
   assert.deepEqual(Object.keys(sources[0]), ['service_id', 'service_name', 'species']);
   assert.equal(sources[0].service_id, 'MVC-030');
+});
+
+test('Dublin date parts use the Irish time zone', () => {
+  const local = dublinDateParts(new Date('2026-07-17T12:30:00Z'));
+  assert.deepEqual(local, { date: '2026-07-17', year: 2026, weekday: 'Friday', time: '13:30' });
+});
+
+test('live context includes current Dublin weather and Irish holidays', async () => {
+  const context = await loadLiveContext(async (url) => {
+    if (url === DUBLIN_WEATHER_URL) return { ok: true, json: async () => ({ current: { temperature_2m: 22, apparent_temperature: 23, precipitation: 0, weather_code: 1, wind_speed_10m: 12 } }) };
+    if (url === `${HOLIDAY_API_BASE_URL}/2026/IE`) return { ok: true, json: async () => ([{ date: '2026-07-17', name: 'Example holiday' }]) };
+    if (url === `${HOLIDAY_API_BASE_URL}/2027/IE`) return { ok: true, json: async () => ([]) };
+    throw new Error(`Unexpected URL: ${url}`);
+  }, new Date('2026-07-17T12:30:00Z'));
+  assert.equal(context.location, 'Dublin, Ireland');
+  assert.equal(context.public_holiday_today.name, 'Example holiday');
+  assert.equal(context.weather_now.temperature_c, 22);
 });
