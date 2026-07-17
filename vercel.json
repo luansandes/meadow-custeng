@@ -1,8 +1,7 @@
 {
   "functions": {
     "api/chat.js": {
-      "includeFiles": "Meadow Vet Care — Services.csv"
+      "includeFiles": ["Meadow Vet Care — Services.csv", "lib/chat-logic.js"]
     }
   }
 }
-

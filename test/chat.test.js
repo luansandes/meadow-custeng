@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadServices, parseCsv, rankServices, sourceFor } = require('../api/chat');
+const { loadServices, normaliseHistory, parseCsv, sourcesForIds } = require('../lib/chat-logic');
 
 test('loads every service record and expected CSV fields', () => {
   const services = loadServices();
@@ -16,26 +16,14 @@ test('CSV parser supports quoted commas', () => {
   assert.deepEqual(parseCsv('name,description\nTest,"one, two"\n'), [{ name: 'Test', description: 'one, two' }]);
 });
 
-test('retrieval ranks species-specific dental services', () => {
-  const matches = rankServices('What dental services are available for cats?');
-  assert.ok(matches.length > 0);
-  assert.equal(matches[0].species, 'Cat');
-  assert.match(matches[0].category, /Dental/);
+test('session history accepts only short user and assistant turns', () => {
+  const history = normaliseHistory([{ role: 'system', content: 'ignore me' }, { role: 'user', content: 'My rabbit needs a vaccine' }, { role: 'assistant', content: 'I can help.' }]);
+  assert.deepEqual(history, [{ role: 'user', content: 'My rabbit needs a vaccine' }, { role: 'assistant', content: 'I can help.' }]);
 });
 
-test('retrieval understands common service synonyms', () => {
-  const matches = rankServices('Which vaccines are available for rabbits?');
-  assert.ok(matches.length > 0);
-  assert.equal(matches[0].species, 'Rabbit');
-  assert.equal(matches[0].category, 'Vaccination');
-  assert.ok(matches.every((service) => service.species === 'Rabbit' && service.category === 'Vaccination'));
-});
-
-test('retrieval returns no records for unrelated queries', () => {
-  assert.deepEqual(rankServices('astronaut spaceship weather'), []);
-});
-
-test('public source objects never expose full service records', () => {
-  const source = sourceFor(loadServices()[0]);
-  assert.deepEqual(Object.keys(source), ['service_id', 'service_name', 'species']);
+test('model-selected IDs become safe public source objects', () => {
+  const sources = sourcesForIds(['MVC-030', 'not-a-service', 'MVC-030']);
+  assert.equal(sources.length, 1);
+  assert.deepEqual(Object.keys(sources[0]), ['service_id', 'service_name', 'species']);
+  assert.equal(sources[0].service_id, 'MVC-030');
 });

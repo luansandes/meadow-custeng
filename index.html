@@ -31,6 +31,7 @@
       .chat-wrap { width:min(920px, calc(100% - 40px)); margin:-30px auto 52px; position:relative; }
       .chat-shell { background:#fff; border:1px solid var(--line); border-radius:23px; box-shadow:var(--shadow); overflow:hidden; }
       .chat-heading { display:flex; align-items:center; gap:12px; padding:20px 24px; border-bottom:1px solid var(--line); }
+      .clear { margin-left:auto; }
       .avatar { flex:0 0 auto; width:39px; height:39px; display:grid; place-items:center; border-radius:50%; background:var(--mint); color:var(--evergreen); font-size:20px; }
       .chat-heading h2 { margin:0; font-size:1rem; letter-spacing:-.02em; }
       .status { margin:1px 0 0; color:var(--muted); font-size:.8rem; }
@@ -86,6 +87,7 @@
             <div class="chat-heading">
               <div class="avatar" aria-hidden="true">✦</div>
               <div><h2 id="assistant-title">Meadow service assistant</h2><p class="status">Here to help</p></div>
+              <button class="quick clear" id="clear-chat" type="button">New chat</button>
             </div>
             <div id="conversation" aria-live="polite">
               <div class="message assistant">Hello! I can help you explore Meadow Vet Care services, prices, appointment requirements and availability. What can I help your pet with today?</div>
@@ -111,6 +113,18 @@
       const question = document.querySelector('#question');
       const submit = document.querySelector('#submit');
       const conversation = document.querySelector('#conversation');
+      const SESSION_KEY = 'meadow-vet-chat-history-v1';
+      const MAX_SESSION_MESSAGES = 8;
+      let sessionHistory = readSessionHistory();
+
+      function readSessionHistory() {
+        try {
+          const saved = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '[]');
+          return Array.isArray(saved) ? saved.filter((turn) => turn && ['user', 'assistant'].includes(turn.role) && typeof turn.content === 'string').slice(-MAX_SESSION_MESSAGES) : [];
+        } catch { return []; }
+      }
+
+      function saveSessionHistory() { sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionHistory)); }
 
       function appendMessage(text, type) {
         const message = document.createElement('div');
@@ -137,21 +151,37 @@
         conversation.append(wrapper);
       }
 
+      function addToMemory(role, content) {
+        sessionHistory = [...sessionHistory, { role, content }].slice(-MAX_SESSION_MESSAGES);
+        saveSessionHistory();
+      }
+
+      function renderSavedConversation() {
+        if (!sessionHistory.length) return;
+        conversation.replaceChildren();
+        sessionHistory.forEach((turn) => appendMessage(turn.content, turn.role));
+      }
+
       async function ask(value) {
         if (!value || submit.disabled) return;
         appendMessage(value, 'user');
+        const priorHistory = sessionHistory;
+        addToMemory('user', value);
         question.value = '';
         submit.disabled = true;
         submit.textContent = 'Sending…';
         const pending = appendMessage('Looking through Meadow’s service guide…', 'assistant loading');
         try {
-          const response = await fetch(`${API_BASE_URL}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: value }) });
+          const response = await fetch(`${API_BASE_URL}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: value, history: priorHistory }) });
           const payload = await response.json();
           if (!response.ok) throw new Error(payload.error || 'I’m sorry, I can’t answer that right now.');
           pending.remove();
           appendMessage(payload.answer, 'assistant');
+          addToMemory('assistant', payload.answer);
           appendSources(payload.sources);
         } catch (error) {
+          sessionHistory = priorHistory;
+          saveSessionHistory();
           pending.className = 'message error';
           pending.textContent = error.message || 'I’m sorry, I can’t answer that right now.';
         } finally {
@@ -163,6 +193,8 @@
 
       form.addEventListener('submit', (event) => { event.preventDefault(); ask(question.value.trim()); });
       document.querySelectorAll('.quick').forEach((button) => button.addEventListener('click', () => ask(button.textContent)));
+      document.querySelector('#clear-chat').addEventListener('click', () => { sessionHistory = []; sessionStorage.removeItem(SESSION_KEY); conversation.replaceChildren(); appendMessage('Hello! I can help you explore Meadow Vet Care services, prices, appointment requirements and availability. What can I help your pet with today?', 'assistant'); question.focus(); });
+      renderSavedConversation();
     </script>
   </body>
 </html>

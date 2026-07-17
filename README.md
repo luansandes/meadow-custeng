@@ -2,6 +2,14 @@
 
 This repository contains a GitHub Pages chat interface and a Vercel serverless API. The API answers only from the committed `Meadow Vet Care — Services.csv` file.
 
+## Chat logic
+
+The chatbot intentionally keeps its logic small and inspectable:
+
+- `lib/chat-logic.js` reads the CSV, defines the prompt and JSON response schema, limits chat history, and turns LLM-selected IDs into safe source chips.
+- `api/chat.js` validates the request and calls the OpenAI Responses API. It sends the full 94-row catalog and recent conversation to the LLM; there is no hidden keyword-ranking or embedding layer.
+- `index.html` stores the most recent eight user/assistant messages in the browser tab's `sessionStorage`. No chat history is stored in a database or on the server.
+
 ## Deploy
 
 1. Push this repository to `luansandes/meadow-custeng` on the `master` branch.
