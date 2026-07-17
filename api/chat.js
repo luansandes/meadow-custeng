@@ -4,7 +4,29 @@ const path = require('node:path');
 const CSV_FILE = path.join(process.cwd(), 'Meadow Vet Care — Services.csv');
 const DEFAULT_ORIGIN = 'https://luansandes.github.io';
 const MAX_QUESTION_LENGTH = 500;
-const MAX_RESULTS = 5;
+const MAX_RESULTS = 4;
+const STOP_WORDS = new Set(['a', 'an', 'and', 'are', 'can', 'do', 'for', 'i', 'in', 'is', 'me', 'my', 'of', 'on', 'or', 'the', 'to', 'what', 'which', 'with']);
+const TERM_ALIASES = {
+  jab: ['vaccination'],
+  jabs: ['vaccination'],
+  vaccine: ['vaccination'],
+  vaccines: ['vaccination'],
+  shot: ['vaccination'],
+  shots: ['vaccination'],
+  teeth: ['dental'],
+  tooth: ['dental'],
+  teethcleaning: ['dental'],
+  groom: ['grooming'],
+  grooming: ['grooming'],
+  chip: ['microchip'],
+  id: ['microchip'],
+  diet: ['nutrition'],
+  food: ['nutrition'],
+  urgent: ['emergency'],
+  emergency: ['emergency'],
+  neuter: ['surgery'],
+  spay: ['surgery']
+};
 
 let servicesCache;
 
@@ -79,9 +101,11 @@ function searchableText(service) {
 
 function rankServices(question, services = loadServices()) {
   const normalizedQuestion = question.toLowerCase().trim();
-  const terms = [...new Set(tokenize(normalizedQuestion))]
+  const baseTerms = [...new Set(tokenize(normalizedQuestion))]
     .filter((term) => term.length > 1)
-    .flatMap((term) => term.endsWith('s') && term.length > 3 ? [term, term.slice(0, -1)] : [term]);
+    .flatMap((term) => term.endsWith('s') && term.length > 3 ? [term, term.slice(0, -1)] : [term])
+    .filter((term) => !STOP_WORDS.has(term));
+  const terms = [...new Set(baseTerms.flatMap((term) => [term, ...(TERM_ALIASES[term] || [])]))];
   if (!terms.length) return [];
 
   return services
@@ -89,10 +113,11 @@ function rankServices(question, services = loadServices()) {
       const text = searchableText(service);
       const name = service.service_name.toLowerCase();
       let score = 0;
+      const category = service.category.toLowerCase();
       for (const term of terms) {
         if (text.includes(term)) score += 2;
         if (name.includes(term)) score += 4;
-        if (service.species.toLowerCase() === term || service.category.toLowerCase() === term) score += 3;
+        if (service.species.toLowerCase() === term || category.includes(term)) score += 3;
       }
       if (text.includes(normalizedQuestion)) score += 8;
       return { service, score };
@@ -200,7 +225,7 @@ async function handler(req, res) {
             role: 'developer',
             content: [{
               type: 'input_text',
-              text: 'You are Meadow Vet Care\'s services assistant. Answer only from the supplied service records. Do not invent facts, prices, policies, medical advice, or booking availability. If the records do not answer the question, say so briefly. Prices are stored as literal euro values: state them exactly as supplied, prefixed with €. Keep the answer concise and do not create citations; the application adds them.'
+              text: 'You are Meadow Vet Care\'s warm, practical services assistant. Answer only from the supplied service records. Do not invent facts, prices, policies, medical advice, or booking availability. If the records do not answer the question, say so briefly and suggest a more specific service or species question. Give the most useful direct answer first. For several relevant services, use short plain-text bullets; for one service, use one or two short sentences. Mention appointment requirements, availability, duration, price, or an offer only when present and relevant. Prices are stored as literal euro values: state them exactly as supplied, prefixed with €. Do not use Markdown formatting or create citations; the application adds sources.'
             }]
           },
           {

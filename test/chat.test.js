@@ -23,6 +23,13 @@ test('retrieval ranks species-specific dental services', () => {
   assert.match(matches[0].category, /Dental/);
 });
 
+test('retrieval understands common service synonyms', () => {
+  const matches = rankServices('Which vaccines are available for rabbits?');
+  assert.ok(matches.length > 0);
+  assert.equal(matches[0].species, 'Rabbit');
+  assert.equal(matches[0].category, 'Vaccination');
+});
+
 test('retrieval returns no records for unrelated queries', () => {
   assert.deepEqual(rankServices('astronaut spaceship weather'), []);
 });

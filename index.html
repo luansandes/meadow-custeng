@@ -3,106 +3,166 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Meadow Vet Care | Services assistant</title>
+    <meta name="theme-color" content="#175c4b">
+    <title>Meadow Vet Care | Service guide</title>
     <style>
-      :root { color-scheme: light; --ink: #12332b; --muted: #587068; --surface: #fffdf8; --accent: #19755f; --accent-dark: #115644; --line: #d9e5dd; --warn: #9a3d25; }
+      :root { --evergreen:#164f42; --leaf:#278166; --mint:#dff2e7; --cream:#fcfaf4; --ink:#17332b; --muted:#61746d; --line:#dce8df; --coral:#cc684f; --shadow:0 24px 60px rgba(24, 71, 57, .13); }
       * { box-sizing: border-box; }
-      body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: linear-gradient(135deg, #e8f3ec, #f8f4e8); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-      main { width: min(720px, calc(100% - 32px)); margin: 32px auto; padding: 32px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 18px 45px #17362a1a; }
-      h1 { margin: 0; font-size: clamp(1.75rem, 4vw, 2.4rem); letter-spacing: -.04em; }
-      .intro { margin: 8px 0 28px; color: var(--muted); }
-      form { display: flex; gap: 10px; }
-      input { width: 100%; min-width: 0; padding: 13px 15px; border: 1px solid #afc7ba; border-radius: 10px; color: var(--ink); font: inherit; }
-      input:focus { outline: 3px solid #9ad4bd; outline-offset: 1px; }
-      button { border: 0; border-radius: 10px; padding: 13px 18px; background: var(--accent); color: white; font: inherit; font-weight: 700; cursor: pointer; }
-      button:hover:not(:disabled) { background: var(--accent-dark); }
-      button:disabled { cursor: wait; opacity: .65; }
-      #result { margin-top: 24px; }
-      .answer { white-space: pre-wrap; }
-      .error { color: var(--warn); }
-      .sources { margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: .92rem; }
-      .sources ul { margin: 6px 0 0; padding-left: 20px; }
-      .hint { margin: 18px 0 0; color: var(--muted); font-size: .85rem; }
-      @media (max-width: 540px) { main { padding: 24px; } form { flex-direction: column; } button { width: 100%; } }
+      body { margin:0; color:var(--ink); background:var(--cream); font:16px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .page { overflow:hidden; }
+      .topbar { width:min(1120px, calc(100% - 40px)); height:76px; margin:auto; display:flex; align-items:center; justify-content:space-between; }
+      .brand { display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:-.03em; color:var(--evergreen); text-decoration:none; }
+      .brand-mark { width:35px; height:35px; display:grid; place-items:center; color:white; background:var(--evergreen); border-radius:11px 11px 15px 15px; font-size:19px; }
+      .topnote { color:var(--muted); font-size:.9rem; }
+      .hero { position:relative; padding:54px 20px 70px; background:linear-gradient(120deg, #e5f4e9 0%, #f9f6e9 70%); }
+      .hero-inner { width:min(1120px, 100%); margin:auto; display:grid; grid-template-columns:1.03fr .97fr; align-items:center; gap:60px; }
+      .eyebrow { display:inline-flex; gap:8px; align-items:center; margin:0 0 16px; color:var(--leaf); font-size:.78rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+      .eyebrow::before { content:""; width:22px; height:2px; background:currentColor; }
+      h1 { max-width:610px; margin:0; font-size:clamp(2.65rem, 6vw, 4.7rem); line-height:1.02; letter-spacing:-.065em; }
+      .hero-copy { max-width:530px; margin:20px 0 0; color:var(--muted); font-size:1.1rem; }
+      .trust { display:flex; gap:25px; margin-top:28px; color:var(--evergreen); font-size:.9rem; font-weight:700; }
+      .trust span::before { content:"✓"; margin-right:7px; color:var(--leaf); }
+      .pet-card { position:relative; min-height:300px; border-radius:35px; overflow:hidden; background:var(--evergreen); box-shadow:var(--shadow); }
+      .pet-card::before, .pet-card::after { content:""; position:absolute; border-radius:50%; background:#3d9b7b; opacity:.7; }
+      .pet-card::before { width:250px; height:250px; right:-55px; top:-85px; }
+      .pet-card::after { width:170px; height:170px; left:-42px; bottom:-60px; background:#91d2af; }
+      .pet-illustration { position:absolute; inset:0; display:grid; place-items:center; color:#f6f2dd; font-size:10rem; transform:rotate(-5deg); }
+      .pet-card p { position:absolute; right:25px; bottom:22px; left:25px; margin:0; color:#e3f3e7; font-size:1rem; font-weight:650; }
+      .chat-wrap { width:min(920px, calc(100% - 40px)); margin:-30px auto 52px; position:relative; }
+      .chat-shell { background:#fff; border:1px solid var(--line); border-radius:23px; box-shadow:var(--shadow); overflow:hidden; }
+      .chat-heading { display:flex; align-items:center; gap:12px; padding:20px 24px; border-bottom:1px solid var(--line); }
+      .avatar { flex:0 0 auto; width:39px; height:39px; display:grid; place-items:center; border-radius:50%; background:var(--mint); color:var(--evergreen); font-size:20px; }
+      .chat-heading h2 { margin:0; font-size:1rem; letter-spacing:-.02em; }
+      .status { margin:1px 0 0; color:var(--muted); font-size:.8rem; }
+      .status::before { content:""; display:inline-block; width:7px; height:7px; margin-right:5px; border-radius:50%; background:#5bae72; }
+      #conversation { min-height:238px; max-height:440px; overflow-y:auto; padding:24px; background:linear-gradient(#fff, #fbfcfa); }
+      .message { max-width:min(630px, 92%); margin:0 0 17px; padding:13px 15px; border-radius:5px 16px 16px 16px; white-space:pre-wrap; }
+      .assistant { background:#edf7f0; color:#24463c; }
+      .user { margin-left:auto; border-radius:16px 5px 16px 16px; background:var(--evergreen); color:#fff; }
+      .loading { color:var(--muted); font-size:.92rem; font-style:italic; }
+      .error { background:#fff0ec; color:#9d4733; }
+      .sources { max-width:min(630px, 92%); margin:-8px 0 18px; color:var(--muted); font-size:.79rem; }
+      .sources strong { color:var(--ink); }
+      .sources ul { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 0; padding:0; list-style:none; }
+      .sources li { padding:4px 7px; border:1px solid var(--line); border-radius:999px; background:white; }
+      .quick-questions { display:flex; flex-wrap:wrap; gap:8px; padding:0 24px 18px; }
+      .quick { border:1px solid #cfe1d4; border-radius:999px; padding:7px 11px; background:#fff; color:var(--evergreen); font:inherit; font-size:.82rem; cursor:pointer; }
+      .quick:hover { background:var(--mint); }
+      form { display:flex; gap:10px; padding:16px 18px; border-top:1px solid var(--line); background:#fff; }
+      input { width:100%; min-width:0; border:1px solid #bdd3c4; border-radius:12px; padding:13px 14px; color:var(--ink); font:inherit; }
+      input:focus { outline:3px solid #c6ead4; outline-offset:1px; }
+      .send { border:0; border-radius:12px; padding:0 19px; background:var(--evergreen); color:#fff; font:inherit; font-weight:750; cursor:pointer; }
+      .send:hover:not(:disabled) { background:#0c3c31; }
+      .send:disabled { opacity:.6; cursor:wait; }
+      .privacy { margin:12px 0 0; text-align:center; color:var(--muted); font-size:.78rem; }
+      .sr-only { position:absolute; left:-9999px; }
+      @media (max-width:760px) { .topnote { display:none; } .hero { padding-top:30px; } .hero-inner { grid-template-columns:1fr; gap:32px; } .pet-card { min-height:190px; } .pet-illustration { font-size:7rem; } .trust { gap:14px; flex-wrap:wrap; } .chat-wrap { width:min(100% - 24px, 920px); margin-top:-24px; } }
+      @media (max-width:500px) { .topbar { width:calc(100% - 28px); } .hero { padding-inline:15px; } h1 { font-size:2.75rem; } #conversation { padding:18px; min-height:260px; } .quick-questions { padding-inline:18px; } form { padding:12px; } .send { padding:0 13px; } }
     </style>
   </head>
   <body>
-    <main>
-      <h1>Meadow Vet Care</h1>
-      <p class="intro">Ask about our services, prices, species, appointment requirements, or availability.</p>
-      <form id="chat-form">
-        <label class="sr-only" for="question" style="position:absolute;left:-9999px">Your question</label>
-        <input id="question" name="question" maxlength="500" required autocomplete="off" placeholder="For example: What dental services are available for cats?">
-        <button id="submit" type="submit">Ask</button>
-      </form>
-      <section id="result" aria-live="polite"></section>
-      <p class="hint">Answers are based only on Meadow Vet Care’s service list.</p>
-    </main>
+    <div class="page">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="Meadow Vet Care home"><span class="brand-mark" aria-hidden="true">✦</span> Meadow Vet Care</a>
+        <span class="topnote">Gentle care. Clear answers.</span>
+      </header>
+      <main id="top">
+        <section class="hero" aria-labelledby="page-title">
+          <div class="hero-inner">
+            <div>
+              <p class="eyebrow">Your service guide</p>
+              <h1 id="page-title">Care starts with a good question.</h1>
+              <p class="hero-copy">Find the right Meadow service for your pet—from routine checks to dental care, vaccinations and more.</p>
+              <div class="trust"><span>Clear service details</span><span>Answers for every pet</span></div>
+            </div>
+            <aside class="pet-card" aria-label="Meadow Vet Care service assistant">
+              <div class="pet-illustration" aria-hidden="true">🐾</div>
+              <p>Tell us what your pet needs. Our guide will help you explore the right services.</p>
+            </aside>
+          </div>
+        </section>
+        <section class="chat-wrap" aria-labelledby="assistant-title">
+          <div class="chat-shell">
+            <div class="chat-heading">
+              <div class="avatar" aria-hidden="true">✦</div>
+              <div><h2 id="assistant-title">Meadow service assistant</h2><p class="status">Here to help</p></div>
+            </div>
+            <div id="conversation" aria-live="polite">
+              <div class="message assistant">Hello! I can help you explore Meadow Vet Care services, prices, appointment requirements and availability. What can I help your pet with today?</div>
+            </div>
+            <div class="quick-questions" aria-label="Try a question">
+              <button class="quick" type="button">What vaccinations are available for rabbits?</button>
+              <button class="quick" type="button">Do cats need an appointment for dental care?</button>
+              <button class="quick" type="button">What grooming services do you offer?</button>
+            </div>
+            <form id="chat-form">
+              <label class="sr-only" for="question">Ask about a Meadow service</label>
+              <input id="question" name="question" maxlength="500" required autocomplete="off" placeholder="Ask about a service for your pet…">
+              <button class="send" id="submit" type="submit">Send</button>
+            </form>
+          </div>
+          <p class="privacy">Answers are based on Meadow Vet Care’s current service guide.</p>
+        </section>
+      </main>
+    </div>
     <script>
-      // Replace this after the first Vercel production deployment. Do not add a trailing slash.
       const API_BASE_URL = 'https://meadow-custeng-2tue.vercel.app';
       const form = document.querySelector('#chat-form');
       const question = document.querySelector('#question');
       const submit = document.querySelector('#submit');
-      const result = document.querySelector('#result');
+      const conversation = document.querySelector('#conversation');
 
-      function showError(message) {
-        result.replaceChildren();
-        const paragraph = document.createElement('p');
-        paragraph.className = 'error';
-        paragraph.textContent = message;
-        result.append(paragraph);
+      function appendMessage(text, type) {
+        const message = document.createElement('div');
+        message.className = `message ${type}`;
+        message.textContent = text;
+        conversation.append(message);
+        conversation.scrollTop = conversation.scrollHeight;
+        return message;
       }
 
-      function showAnswer(payload) {
-        result.replaceChildren();
-        const answer = document.createElement('p');
-        answer.className = 'answer';
-        answer.textContent = payload.answer;
-        result.append(answer);
-        if (payload.sources && payload.sources.length) {
-          const sources = document.createElement('div');
-          sources.className = 'sources';
-          const label = document.createElement('strong');
-          label.textContent = 'Services used';
-          const list = document.createElement('ul');
-          payload.sources.forEach((source) => {
-            const item = document.createElement('li');
-            item.textContent = `${source.service_name} (${source.species}) — ${source.service_id}`;
-            list.append(item);
-          });
-          sources.append(label, list);
-          result.append(sources);
-        }
+      function appendSources(sources) {
+        if (!sources || !sources.length) return;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'sources';
+        const label = document.createElement('strong');
+        label.textContent = 'Services used';
+        const list = document.createElement('ul');
+        sources.forEach((source) => {
+          const item = document.createElement('li');
+          item.textContent = `${source.service_name} · ${source.species}`;
+          list.append(item);
+        });
+        wrapper.append(label, list);
+        conversation.append(wrapper);
       }
 
-      form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const value = question.value.trim();
-        if (!value) return;
-        if (API_BASE_URL.includes('YOUR-VERCEL-PROJECT')) {
-          showError('This chatbot is awaiting its Vercel API URL.');
-          return;
-        }
+      async function ask(value) {
+        if (!value || submit.disabled) return;
+        appendMessage(value, 'user');
+        question.value = '';
         submit.disabled = true;
-        submit.textContent = 'Thinking…';
-        result.textContent = 'Searching Meadow’s services…';
+        submit.textContent = 'Sending…';
+        const pending = appendMessage('Looking through Meadow’s service guide…', 'assistant loading');
         try {
-          const response = await fetch(`${API_BASE_URL}/api/chat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question: value })
-          });
+          const response = await fetch(`${API_BASE_URL}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: value }) });
           const payload = await response.json();
-          if (!response.ok) throw new Error(payload.error || 'Unable to answer that right now.');
-          showAnswer(payload);
+          if (!response.ok) throw new Error(payload.error || 'I’m sorry, I can’t answer that right now.');
+          pending.remove();
+          appendMessage(payload.answer, 'assistant');
+          appendSources(payload.sources);
         } catch (error) {
-          showError(error.message || 'Unable to answer that right now.');
+          pending.className = 'message error';
+          pending.textContent = error.message || 'I’m sorry, I can’t answer that right now.';
         } finally {
           submit.disabled = false;
-          submit.textContent = 'Ask';
+          submit.textContent = 'Send';
+          question.focus();
         }
-      });
+      }
+
+      form.addEventListener('submit', (event) => { event.preventDefault(); ask(question.value.trim()); });
+      document.querySelectorAll('.quick').forEach((button) => button.addEventListener('click', () => ask(button.textContent)));
     </script>
   </body>
 </html>
