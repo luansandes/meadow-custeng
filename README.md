@@ -11,7 +11,7 @@ This repository contains a GitHub Pages chat interface and a Vercel serverless A
    - `OPENAI_API_KEY`: your OpenAI API key
    - `OPENAI_MODEL`: `gpt-5.6-luna`
    - `ALLOWED_ORIGIN`: `https://luansandes.github.io`
-5. Deploy Vercel. Copy its production URL and replace `https://YOUR-VERCEL-PROJECT.vercel.app` in `index.html` with that URL. Commit and push the change.
+5. Deploy Vercel. The production API is currently configured as `https://meadow-custeng-2tue.vercel.app`; if you change that deployment URL, update `API_BASE_URL` in `index.html`, then commit and push.
 
 The browser is allowed to call only from `https://luansandes.github.io`; Vercel keeps the OpenAI key private. Updating the committed CSV and deploying again updates the chatbot knowledge.
 
