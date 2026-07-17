@@ -7,7 +7,7 @@ This repository contains a GitHub Pages chat interface and a Vercel serverless A
 The chatbot intentionally keeps its logic small and inspectable:
 
 - `chatbot-instructions.md` is the editable source of truth for the assistant's instructions. Change it and deploy to update its behavior.
-- `lib/chat-logic.js` downloads and caches the Google Sheet's CSV for five minutes, defines the JSON response schema, limits chat history, and turns LLM-selected IDs into safe source chips.
+- `lib/chat-logic.js` downloads the Google Sheet's CSV on every chat request, defines the JSON response schema, limits chat history, and turns LLM-selected IDs into safe source chips.
 - `api/chat.js` validates the request and calls the OpenAI Responses API. It sends the complete sheet catalog and recent conversation to the LLM; there is no hidden keyword-ranking or embedding layer.
 - `index.html` stores the most recent eight user/assistant messages in the browser tab's `sessionStorage`. No chat history is stored in a database or on the server.
 
@@ -22,7 +22,7 @@ The chatbot intentionally keeps its logic small and inspectable:
    - `ALLOWED_ORIGIN`: `https://luansandes.github.io`
 5. Deploy Vercel. The production API is currently configured as `https://meadow-custeng-2tue.vercel.app`; if you change that deployment URL, update `API_BASE_URL` in `index.html`, then commit and push.
 
-The browser is allowed to call only from `https://luansandes.github.io`; Vercel keeps the OpenAI key private. Keep the Google Sheet shared as **Anyone with the link → Viewer**. Sheet edits appear in new chats within about five minutes.
+The browser is allowed to call only from `https://luansandes.github.io`; Vercel keeps the OpenAI key private. Keep the Google Sheet shared as **Anyone with the link → Viewer**. The sheet is checked afresh for every message, so new edits are used by the next chat request.
 
 ## Local verification
 
@@ -32,4 +32,4 @@ Use Node.js 20 or newer, then run:
 npm test
 ```
 
-To test the deployed API, send a JSON POST request to `/api/chat` with a `question` string. A successful response contains `answer` and `sources`.
+To test the deployed API, send a JSON POST request to `/api/chat` with a `message` string. A successful response contains `answer` and `sources`.
