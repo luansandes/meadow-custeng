@@ -33,14 +33,15 @@ test('Dublin date parts use the Irish time zone', () => {
   assert.deepEqual(local, { date: '2026-07-17', year: 2026, weekday: 'Friday', time: '13:30' });
 });
 
-test('live context includes current Dublin weather and Irish holidays', async () => {
+test('live context includes current Dublin weather and a sorted upcoming-holiday list', async () => {
   const context = await loadLiveContext(async (url) => {
     if (url === DUBLIN_WEATHER_URL) return { ok: true, json: async () => ({ current: { temperature_2m: 22, apparent_temperature: 23, precipitation: 0, weather_code: 1, wind_speed_10m: 12 } }) };
-    if (url === `${HOLIDAY_API_BASE_URL}/2026/IE`) return { ok: true, json: async () => ([{ date: '2026-07-17', name: 'Example holiday' }]) };
+    if (url === `${HOLIDAY_API_BASE_URL}/2026/IE`) return { ok: true, json: async () => ([{ date: '2026-12-25', name: 'Christmas Day' }, { date: '2026-08-03', name: 'August Bank Holiday' }, { date: '2026-07-17', name: 'Example holiday' }]) };
     if (url === `${HOLIDAY_API_BASE_URL}/2027/IE`) return { ok: true, json: async () => ([]) };
     throw new Error(`Unexpected URL: ${url}`);
   }, new Date('2026-07-17T12:30:00Z'));
   assert.equal(context.location, 'Dublin, Ireland');
   assert.equal(context.public_holiday_today.name, 'Example holiday');
+  assert.deepEqual(context.upcoming_irish_public_holidays, [{ date: '2026-07-17', name: 'Example holiday' }, { date: '2026-08-03', name: 'August Bank Holiday' }, { date: '2026-12-25', name: 'Christmas Day' }]);
   assert.equal(context.weather_now.temperature_c, 22);
 });
