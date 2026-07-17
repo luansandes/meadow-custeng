@@ -107,8 +107,18 @@ function rankServices(question, services = loadServices()) {
     .filter((term) => !STOP_WORDS.has(term));
   const terms = [...new Set(baseTerms.flatMap((term) => [term, ...(TERM_ALIASES[term] || [])]))];
   if (!terms.length) return [];
+  const requestedSpecies = new Set(services
+    .filter((service) => terms.includes(service.species.toLowerCase()))
+    .map((service) => service.species));
+  const requestedCategories = new Set(services
+    .filter((service) => tokenize(service.category).some((term) => terms.includes(term)))
+    .map((service) => service.category));
+  const candidateServices = services.filter((service) => (
+    (!requestedSpecies.size || requestedSpecies.has(service.species)) &&
+    (!requestedCategories.size || requestedCategories.has(service.category))
+  ));
 
-  return services
+  return candidateServices
     .map((service) => {
       const text = searchableText(service);
       const name = service.service_name.toLowerCase();

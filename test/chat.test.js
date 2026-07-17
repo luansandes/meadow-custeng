@@ -28,6 +28,7 @@ test('retrieval understands common service synonyms', () => {
   assert.ok(matches.length > 0);
   assert.equal(matches[0].species, 'Rabbit');
   assert.equal(matches[0].category, 'Vaccination');
+  assert.ok(matches.every((service) => service.species === 'Rabbit' && service.category === 'Vaccination'));
 });
 
 test('retrieval returns no records for unrelated queries', () => {
