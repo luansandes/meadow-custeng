@@ -1,0 +1,13 @@
+{
+  "name": "meadow-custeng",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Grounded Meadow Vet Care services chatbot",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
+
