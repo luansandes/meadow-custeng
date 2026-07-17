@@ -1,19 +1,17 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { loadServices, normaliseHistory, parseCsv, sourcesForIds } = require('../lib/chat-logic');
-
-test('loads every service record and expected CSV fields', () => {
-  const services = loadServices();
-  assert.equal(services.length, 94);
-  assert.deepEqual(Object.keys(services[0]), [
-    'service_id', 'category', 'species', 'price_eur', 'duration_min',
-    'requires_appointment', 'availability', 'slots_this_week', 'special_offer',
-    'service_name', 'description'
-  ]);
-});
+const { SHEET_CSV_URL, loadServices, normaliseHistory, parseCsv, sourcesForIds } = require('../lib/chat-logic');
 
 test('CSV parser supports quoted commas', () => {
   assert.deepEqual(parseCsv('name,description\nTest,"one, two"\n'), [{ name: 'Test', description: 'one, two' }]);
+});
+
+test('service catalog loads from the configured Google Sheet export', async () => {
+  const services = await loadServices(async (url) => {
+    assert.equal(url, SHEET_CSV_URL);
+    return { ok: true, text: async () => 'service_id,service_name,species\nMVC-999,Test service,Dog\n' };
+  });
+  assert.deepEqual(services, [{ service_id: 'MVC-999', service_name: 'Test service', species: 'Dog' }]);
 });
 
 test('session history accepts only short user and assistant turns', () => {
@@ -22,7 +20,8 @@ test('session history accepts only short user and assistant turns', () => {
 });
 
 test('model-selected IDs become safe public source objects', () => {
-  const sources = sourcesForIds(['MVC-030', 'not-a-service', 'MVC-030']);
+  const services = [{ service_id: 'MVC-030', service_name: 'Rabbit vaccine', species: 'Rabbit' }];
+  const sources = sourcesForIds(services, ['MVC-030', 'not-a-service', 'MVC-030']);
   assert.equal(sources.length, 1);
   assert.deepEqual(Object.keys(sources[0]), ['service_id', 'service_name', 'species']);
   assert.equal(sources[0].service_id, 'MVC-030');
